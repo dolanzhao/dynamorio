@@ -1,5 +1,5 @@
 /* **********************************************************
- * Copyright (c) 2016-2019 Google, Inc.  All rights reserved.
+ * Copyright (c) 2016-2020 Google, Inc.  All rights reserved.
  * **********************************************************/
 
 /*
@@ -189,15 +189,24 @@ post_process()
         std::string dir_err = dir.initialize(raw_dir, "");
         assert(dir_err.empty());
         std::unique_ptr<module_mapper_t> module_mapper = module_mapper_t::create(
-            dir.modfile_bytes, parse_cb, process_cb, MAGIC_VALUE, free_cb);
+            dir.modfile_bytes_, parse_cb, process_cb, MAGIC_VALUE, free_cb);
         assert(module_mapper->get_last_error().empty());
         // Test back-compat of deprecated APIs.
-        raw2trace_t raw2trace(dir.modfile_bytes, dir.in_files, dir.out_files, NULL);
+        raw2trace_t raw2trace(dir.modfile_bytes_, dir.in_files_, dir.out_files_, NULL);
         std::string error =
             raw2trace.handle_custom_data(parse_cb, process_cb, MAGIC_VALUE, free_cb);
         assert(error.empty());
         error = raw2trace.do_module_parsing();
         assert(error.empty());
+        // Test writing module data and reading it back in.
+        char buf[128 * 204];
+        size_t wrote;
+        drcovlib_status_t res = module_mapper->write_module_data(
+            buf, BUFFER_SIZE_BYTES(buf), print_cb, &wrote);
+        assert(res == DRCOVLIB_SUCCESS);
+        std::unique_ptr<module_mapper_t> remapper =
+            module_mapper_t::create(buf, parse_cb, process_cb, MAGIC_VALUE, free_cb);
+        assert(remapper->get_last_error().empty());
     }
     /* Now write a final trace to a location that the drcachesim -indir step
      * run by the outer test harness will find (TRACE_FILENAME).
@@ -205,12 +214,14 @@ post_process()
     raw2trace_directory_t dir;
     std::string dir_err = dir.initialize(raw_dir, "");
     assert(dir_err.empty());
-    raw2trace_t raw2trace(dir.modfile_bytes, dir.in_files, dir.out_files, dr_context, 0);
+    raw2trace_t raw2trace(dir.modfile_bytes_, dir.in_files_, dir.out_files_, dr_context,
+                          0);
     std::string error =
         raw2trace.handle_custom_data(parse_cb, process_cb, MAGIC_VALUE, free_cb);
     assert(error.empty());
     error = raw2trace.do_conversion();
     assert(error.empty());
+    dr_standalone_exit();
 }
 
 int
