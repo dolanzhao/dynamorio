@@ -424,7 +424,7 @@ config_read(config_info_t *cfg, const char *appname_in, process_id_t pid, const 
              * only makes sense for main config for this process
              */
             snprintf(cfg->fname_app, BUFFER_SIZE_ELEMENTS(cfg->fname_app),
-                     "%s/%s/%s.%d.1%s", local, LOCAL_CONFIG_SUBDIR, appname, pid_to_check,
+                     "%s/%s/%s.%s.%d.1%s", local, LOCAL_CONFIG_SUBDIR, appname, get_process_hostname(), pid_to_check,
                      sfx);
             NULL_TERMINATE_BUFFER(cfg->fname_app);
             INFO(2, "trying config file %s", cfg->fname_app);
@@ -434,8 +434,8 @@ config_read(config_info_t *cfg, const char *appname_in, process_id_t pid, const 
         }
         /* 2) <local>/appname.config */
         if (f_app == INVALID_FILE) {
-            snprintf(cfg->fname_app, BUFFER_SIZE_ELEMENTS(cfg->fname_app), "%s/%s/%s.%s",
-                     local, LOCAL_CONFIG_SUBDIR, appname, sfx);
+            snprintf(cfg->fname_app, BUFFER_SIZE_ELEMENTS(cfg->fname_app), "%s/%s/%s.%s.%s",
+                     local, LOCAL_CONFIG_SUBDIR, appname, get_process_hostname(), sfx);
             NULL_TERMINATE_BUFFER(cfg->fname_app);
             INFO(2, "trying config file %s", cfg->fname_app);
             f_app = os_open(cfg->fname_app, OS_OPEN_READ);

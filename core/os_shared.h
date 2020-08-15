@@ -183,6 +183,8 @@ thread_id_t
 d_r_get_thread_id(void);
 process_id_t
 get_process_id(void);
+char*
+get_process_hostname();
 void
 os_thread_yield(void);
 void

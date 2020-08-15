@@ -47,6 +47,8 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
+#include <sys/utsname.h> /* for struct utsname */
+
 /* Avoid pulling in deps from instr_inline.h included from globals.h */
 #define DR_NO_FAST_IR
 #include "../globals.h"
@@ -73,6 +75,14 @@ process_id_t
 get_process_id()
 {
     return dynamorio_syscall(SYS_getpid, 0);
+}
+
+char*
+get_process_hostname()
+{
+    static struct utsname uinfo;
+    dynamorio_syscall(SYS_uname, 1, (ptr_uint_t)&uinfo);
+    return uinfo.nodename;
 }
 
 /* translate permission string to platform independent protection bits */

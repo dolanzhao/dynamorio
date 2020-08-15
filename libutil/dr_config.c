@@ -546,13 +546,17 @@ get_config_file_name(const char *process_name, process_id_t pid, bool global,
     }
 #    endif
     dir_len = strlen(fname);
+
+    char hostname[MAXIMUM_PATH] = "";
+    gethostname(hostname + strlen(hostname), MAXIMUM_PATH - strlen(hostname));
+
     if (pid > 0) {
         /* <root>/appname.<pid>.1config */
-        _snprintf(fname + dir_len, fname_len - dir_len, "/%s.%d.1%s", process_name, pid,
+        _snprintf(fname + dir_len, fname_len - dir_len, "/%s.%s.%d.1%s", process_name, hostname, pid,
                   get_config_sfx(dr_platform));
     } else {
         /* <root>/appname.config */
-        _snprintf(fname + dir_len, fname_len - dir_len, "/%s.%s", process_name,
+        _snprintf(fname + dir_len, fname_len - dir_len, "/%s.%s.%s", process_name, hostname,
                   get_config_sfx(dr_platform));
     }
     fname[fname_len - 1] = '\0';
